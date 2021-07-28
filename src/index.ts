@@ -1,1 +1,3 @@
-console.log("loaded successfully");
+import {init} from "./app";
+
+init();
