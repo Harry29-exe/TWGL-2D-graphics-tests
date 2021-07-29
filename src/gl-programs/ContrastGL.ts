@@ -1,53 +1,40 @@
-import {ProgramGL} from "./ProgramGL";
+import {basicVertexShaderSrc, ProgramGL} from "./ProgramGL";
 import {
     BufferInfo,
     createBufferInfoFromArrays,
     createProgramInfo,
     drawBufferInfo,
-    setBuffersAndAttributes
+    setBuffersAndAttributes, setUniforms
 } from "twgl.js";
 import {indexes, uv, vertices} from "./default-buffers/Scenne2D";
-
-const vertexShaderSrc = `#version 300 es
-precision mediump float;
-
-in vec2 vertPos;
-in vec2 texCoords;
-
-out vec2 fragUV;
-
-void main() {
-    fragUV = texCoords;
-    gl_Position = vec4(vertPos, 0.0, 1.0);
-}`;
 
 const fragmentShaderSrc = `#version 300 es
 precision mediump float;
 
 in vec2 fragUV;
+
 uniform sampler2D sampler;
+uniform float contrast;
 
 out vec4 outColor;
 
 void main() {
-    vec4 color = texture(sampler, fragUV);
-    outColor = vec4(color.x + 0.1, color.y + 0.1, color.z + 0.1, color.w);
+    float f = (259.0 * (contrast + 255.0)) / (255.0 * (259.0 - contrast));
+    vec4 tex = texture(sampler, fragUV);
+    float alfa = tex.w;
+    tex = tex * f;
+    outColor = vec4(tex.x > 1.0? 1.0: tex.x, tex.y > 1.0? 1.0: tex.y, tex.z > 1.0? 1.0: tex.z, alfa);
 }`;
 
-export class BrightnessArgs {
-    public input: WebGLTexture;
-    public output: WebGLFramebuffer;
-    public brightnessDiff: number;
+export class ContrastArgsGL {
+    contrast: number;
 
-
-    constructor(input: WebGLTexture, output: WebGLFramebuffer, brightnessDiff: number) {
-        this.input = input;
-        this.output = output;
-        this.brightnessDiff = brightnessDiff;
+    constructor(contrast: number) {
+        this.contrast = contrast;
     }
 }
 
-export class BrightnessGL extends ProgramGL<any>{
+export class ContrastGL extends  ProgramGL<ContrastArgsGL>{
 
     constructor(gl: WebGL2RenderingContext) {
         super(gl);
@@ -55,7 +42,7 @@ export class BrightnessGL extends ProgramGL<any>{
     }
 
     compile(): void {
-        this.programInfo = createProgramInfo(this.gl, [vertexShaderSrc, fragmentShaderSrc]);
+        this.programInfo = createProgramInfo(this.gl, [basicVertexShaderSrc, fragmentShaderSrc]);
     }
 
     createBasicBuffers(): void {
@@ -65,14 +52,15 @@ export class BrightnessGL extends ProgramGL<any>{
 
         this.bufferInfo = createBufferInfoFromArrays(this.gl,
             {
-            vertPos: {numComponents: 2, data: vertices},
-            texCoords: {numComponents: 2, data: uv},
-            indices: {numComponents: 3, data: indexes}}
+                vertPos: {numComponents: 2, data: vertices},
+                texCoords: {numComponents: 2, data: uv},
+                indices: {numComponents: 3, data: indexes}}
         );
 
         this.gl.useProgram(this.programInfo.program);
         setBuffersAndAttributes(this.gl, this.programInfo, this.bufferInfo);
     }
+
 
     delete(): void {
         if(this.programInfo === null) {
@@ -87,7 +75,8 @@ export class BrightnessGL extends ProgramGL<any>{
         this.bufferInfo = null;
     }
 
-    setAttributes(attributes: any): void {
+    setAttributes(attributes: ContrastArgsGL): void {
+        setUniforms(this.programInfo, attributes);
     }
 
     useBasicBuffers(bufferInfo: BufferInfo): void {
@@ -101,5 +90,6 @@ export class BrightnessGL extends ProgramGL<any>{
         this.gl.useProgram(this.programInfo.program);
         setBuffersAndAttributes(this.gl, this.programInfo, bufferInfo);
     }
+
 
 }

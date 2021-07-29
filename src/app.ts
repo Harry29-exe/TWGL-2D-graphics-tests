@@ -1,95 +1,80 @@
 import {
-    createBufferInfoFromArrays,
-    createProgramInfo,
+    createFramebufferInfo,
     createTexture,
-    drawBufferInfo,
-    setBuffersAndAttributes, setUniforms
 } from "twgl.js";
+import {BrightnessGL} from "./gl-programs/BrightnessGL";
+import {ContrastGL} from "./gl-programs/ContrastGL";
 
-const vertShaderSrc = `#version 300 es
-precision mediump float;
-
-in vec2 vertPos;
-in vec2 texCoords;
-
-out vec2 fragTex;
-
-void main() {
-    fragTex = texCoords;
-    gl_Position = vec4(vertPos, 0.0, 1.0);
-}
-`;
-
-
-const fragShaderSrc = `#version 300 es
-precision mediump float;
-
-in vec2 fragTex;
-uniform sampler2D sampler;
-
-out vec4 outColor;
-
-void main() {
-    vec4 color = texture(sampler, fragTex);
-    outColor = vec4(color.x + 0.1, color.y + 0.1,color.z + 0.1, color.w);
-}`;
-
-const trisPos = [
-    -1.0, -1.0,
-     1.0, -1.0,
-    -1.0,  1.0,
-     1.0,  1.0
-];
-
-const trisUV = [
-    0.0, 1.0,
-    1.0, 1.0,
-    0.0, 0.0,
-    1.0, 0.0
-];
-// const trisUV = [
-//     0.0, 0.0,
-//     1.0, 0.0,
-//     0.0, 1.0,
-//     1.0, 1.0
-// ];
-
-const trisIndexes = [
-    0, 1, 2,
-    3, 2, 1
-];
-
-const arrays = {
-    vertPos: {numComponents: 2, data: trisPos},
-    texCoords: {numComponents: 2, data: trisUV},
-    indices: {numComponents: 3, data: trisIndexes}
-};
 
 export async function init() {
     document.body.innerHTML = `
         <canvas id="canvas" height="4446px" width="6241px" style="width: 621px; height: 444px"></canvas>`;
-
+    let width = 6241;
+    let height = 4446;
     let gl = (document.getElementById('canvas') as HTMLCanvasElement).getContext('webgl2');
 
     if(!gl) {
         throw new Error('No webgl2');
     }
 
-    let programInfo = createProgramInfo(gl, [vertShaderSrc, fragShaderSrc]);
-    let bufferInfo = createBufferInfoFromArrays(
-        gl, arrays);
+    let brightness = new ContrastGL(gl);
+    brightness.createBasicBuffers();
+    brightness.setAttributes({contrast: 25});
 
-    gl.useProgram(programInfo.program);
-    setBuffersAndAttributes(gl, programInfo, bufferInfo);
+    let tex0 = createTexture(gl, {target: gl.TEXTURE_2D, src: 'tex1.jpg'});
+    let tex1 = createAndSetupTexture(gl);
+    gl.texImage2D(
+        gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0,
+        gl.RGBA, gl.UNSIGNED_BYTE, null);
+    let tex2 = createAndSetupTexture(gl);
+    gl.texImage2D(
+        gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0,
+        gl.RGBA, gl.UNSIGNED_BYTE, null);
+    let fb1 = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb1);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex1, 0);
+    let fb2 = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb2);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex2, 0);
 
 
-    function render() {
+    function render(tex: WebGLTexture, fb: WebGLFramebuffer) {
+        setFramebuffer(fb, 6241, 4446);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
 
         gl.clearColor(0.2, 0.8, 0.2, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        drawBufferInfo(gl, bufferInfo);
+        brightness.render();
+        console.log('render');
     }
 
-    let texture = createTexture(gl, {target: gl.TEXTURE_2D, src: 'tex1.jpg'}, () => render());
+    setTimeout(() => render(tex0, fb1), 1000);
+    setTimeout(() => render(tex1, fb2), 2000);
+    setTimeout(() => render(tex2, null), 3000);
+
+
+    function setFramebuffer(fbo: WebGLFramebuffer, width: number, height: number) {
+        // make this the framebuffer we are rendering to.
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+
+        // Tell WebGL how to convert from clip space to pixels
+        gl.viewport(0, 0, width, height);
+    }
 }
+
+function createAndSetupTexture(gl: WebGL2RenderingContext) {
+    var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    // Set up texture so we can render any size image and so we are
+    // working with pixels.
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    return texture;
+}
+
+
 
