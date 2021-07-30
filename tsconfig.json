@@ -7,5 +7,9 @@
     "allowJs": false,
     "sourceMap": true,
     "moduleResolution": "Node",
+    "lib": [
+      "es2017",
+      "dom"
+    ]
   }
 }
