@@ -67,6 +67,10 @@ export class BasicRendererGL {
             currentProgram.render();
         }
 
+        gl.deleteTexture(lastFrameBuffer === 0? tex1: tex2);
+        gl.deleteFramebuffer(fb1);
+        gl.deleteFramebuffer(fb2);
+
         return lastFrameBuffer === 0?
             new TextureInfoGL(tex2, texture.width, texture.height)
             :

@@ -23,14 +23,10 @@ void main() {
 }`;
 
 export class BrightnessArgs {
-    public input: WebGLTexture;
-    public output: WebGLFramebuffer;
     public brightnessDiff: number;
 
 
-    constructor(input: WebGLTexture, output: WebGLFramebuffer, brightnessDiff: number) {
-        this.input = input;
-        this.output = output;
+    constructor(brightnessDiff: number) {
         this.brightnessDiff = brightnessDiff;
     }
 }
