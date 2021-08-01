@@ -1,14 +1,16 @@
 import {WebGLRenderer} from "./WebGLRenderer";
 import {BasicProgramGL} from "../gl-programs/basic-programs/BasicProgramGL";
-import {ContrastGL} from "../gl-programs/imlementacions/ContrastGL";
+import {ContrastArgsGL, ContrastGL} from "../gl-programs/imlementacions/ContrastGL";
 import {BufferInfo, createBufferInfoFromArrays, createFramebufferInfo, createProgramInfo, createTexture} from "twgl.js";
 import {indexes, uv, vertices} from "../gl-programs/default-buffers/Scenne2D";
 import {BrightnessGL} from "../gl-programs/imlementacions/BrightnessGL";
 import {TextureInfoGL} from "../gl-programs/TextureInfoGL";
+import {RenderToCanvasGL} from "../gl-programs/imlementacions/RerenderToCanvasGL";
 
 export enum BasicPrograms {
     CONTRAST,
-    BRIGHTNESS
+    BRIGHTNESS,
+    TO_CANVAS
 }
 
 export class BasicRendererGL {
@@ -32,27 +34,33 @@ export class BasicRendererGL {
 
         p = new BrightnessGL(gl);
         p.useBasicBuffers(defaultBuffer);
-        programs.set(BasicPrograms.CONTRAST, p);
+        programs.set(BasicPrograms.BRIGHTNESS, p);
 
         p = new ContrastGL(gl);
         p.useBasicBuffers(defaultBuffer);
+        programs.set(BasicPrograms.CONTRAST, p);
+
+        p = new RenderToCanvasGL(gl);
+        p.useBasicBuffers(defaultBuffer);
+        programs.set(BasicPrograms.TO_CANVAS, p);
     }
 
     render(programsToUse: BasicPrograms[], texture: TextureInfoGL): TextureInfoGL {
         let gl = this.gl;
 
         let tex1 = createTexture(gl, {src: null, width: texture.width, height: texture.height});
-        let tex2 = texture;
+        let tex2 = texture.textureGL;
         gl.bindTexture(gl.TEXTURE_2D, tex2);
         let fb2 = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb2);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex1, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex2, 0);
         let fb1 = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb1);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex1, 0);
 
         let lastFrameBuffer = 0;
         let currentProgram: BasicProgramGL<any>;
+        // debugger;
         for(let i = 0; i < programsToUse.length; i++) {
             lastFrameBuffer = this.bindFrameBuffersAndTextures(fb1, fb2, tex1, tex2, lastFrameBuffer);
             currentProgram = this.programs.get(programsToUse[i]);
@@ -60,12 +68,28 @@ export class BasicRendererGL {
         }
 
         return lastFrameBuffer === 0?
-            new TextureInfoGL(tex1, texture.width, texture.height)
+            new TextureInfoGL(tex2, texture.width, texture.height)
             :
-            new TextureInfoGL(tex2, texture.width, texture.height);
+            new TextureInfoGL(tex1, texture.width, texture.height);
     }
 
-    drawResultToCanvas(): void {
+    drawResultToCanvas(textureBuffer: TextureInfoGL): void {
+        let gl = this.gl;
+        gl.bindTexture(gl.TEXTURE_2D, textureBuffer.textureGL);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        let p: BasicProgramGL<any> = this.programs.get(BasicPrograms.TO_CANVAS) as BasicProgramGL<any>;
+        p.render();
+    }
+
+
+    setContrastsAttribs(contrast: number) {
+        let p = this.programs.get(BasicPrograms.CONTRAST) as BasicProgramGL<any>;
+        p.setAttributes(new ContrastArgsGL(contrast));
+    }
+
+    setBrightnessAttribs(brightness: number) {
+        let p = this.programs.get(BasicPrograms.BRIGHTNESS) as BasicProgramGL<any>;
+        p.setAttributes(brightness);
     }
 
     private bindFrameBuffersAndTextures(

@@ -12,26 +12,13 @@ void main() {
     outColor = texture(sampler, fragUV);
 }`;
 
-export class RenderToCanvasGL {
-    public input: WebGLTexture;
-    public output: WebGLFramebuffer;
-    public brightnessDiff: number;
-
-
-    constructor(input: WebGLTexture, output: WebGLFramebuffer, brightnessDiff: number) {
-        this.input = input;
-        this.output = output;
-        this.brightnessDiff = brightnessDiff;
-    }
-}
-
-export class BrightnessGL extends BasicProgramGL<any>{
+export class RenderToCanvasGL extends BasicProgramGL<void | null | undefined>{
 
     constructor(gl: WebGL2RenderingContext) {
         super(gl, fragmentShaderSrc);
     }
 
-    setAttributes(attributes: any): void {
+    setAttributes(attributes: void | null | undefined): void {
     }
 
 }

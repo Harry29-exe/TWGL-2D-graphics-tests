@@ -47,6 +47,7 @@ export class ContrastGL extends  BasicProgramGL<ContrastArgsGL>{
 
 
     setAttributes(attributes: ContrastArgsGL): void {
+        this.gl.useProgram(this.programInfo.program);
         setUniforms(this.programInfo, attributes);
     }
 

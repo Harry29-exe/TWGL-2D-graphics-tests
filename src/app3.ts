@@ -1,5 +1,6 @@
 import {createTexture} from "twgl.js";
 import {BasicPrograms, BasicRendererGL} from "./renderers/BasicRendererGL";
+import {TextureInfoGL} from "./gl-programs/TextureInfoGL";
 
 export function init() {
     document.body.innerHTML = `
@@ -14,7 +15,17 @@ export function init() {
 
     let tex0 = createTexture(gl, {target: gl.TEXTURE_2D, src: 'tex1.jpg'});
     let renderer = new BasicRendererGL(gl);
+
     setTimeout(() => {
-        // renderer.render([BasicPrograms.CONTRAST])
-    })
+        console.log('rendering');
+        renderer.setContrastsAttribs(20);
+        let out = renderer.render([BasicPrograms.CONTRAST], new TextureInfoGL(tex0, width, height));
+
+        setTimeout(() => {
+            console.log('to canvas');
+            renderer.drawResultToCanvas(out);
+        },1000)
+    }, 2000);
+
+
 }
