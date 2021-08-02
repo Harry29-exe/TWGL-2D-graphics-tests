@@ -18,13 +18,10 @@ export function init() {
 
     setTimeout(() => {
         console.log('rendering');
-        renderer.setContrastsAttribs(20);
+        renderer.setContrastsAttribs(40);
         let out = renderer.render([BasicPrograms.CONTRAST], new TextureInfoGL(tex0, width, height));
+        renderer.drawResultToCanvas(out);
 
-        setTimeout(() => {
-            console.log('to canvas');
-            renderer.drawResultToCanvas(out);
-        },1000)
     }, 2000);
 
 

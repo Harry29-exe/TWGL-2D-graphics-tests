@@ -9,7 +9,8 @@ uniform sampler2D sampler;
 out vec4 outColor;
 
 void main() {
-    outColor = texture(sampler, fragUV);
+    vec2 convertUV = vec2(fragUV.x, (fragUV.y * -1.0) + 1.0);
+    outColor = texture(sampler, convertUV);
 }`;
 
 export class RenderToCanvasGL extends BasicProgramGL<void | null | undefined>{

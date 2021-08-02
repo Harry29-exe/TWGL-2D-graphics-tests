@@ -21,28 +21,13 @@ export class BasicRendererGL {
     constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
 
-        let defaultBuffer = createBufferInfoFromArrays(gl,
+        this.defaultBuffer = createBufferInfoFromArrays(gl,
             {
                 vertPos: {numComponents: 2, data: vertices},
                 texCoords: {numComponents: 2, data: uv},
                 indices: {numComponents: 3, data: indexes}}
         );
-        this.defaultBuffer = defaultBuffer;
-
-        let programs = this.programs;
-        let p: BasicProgramGL<any>;
-
-        p = new BrightnessGL(gl);
-        p.useBasicBuffers(defaultBuffer);
-        programs.set(BasicPrograms.BRIGHTNESS, p);
-
-        p = new ContrastGL(gl);
-        p.useBasicBuffers(defaultBuffer);
-        programs.set(BasicPrograms.CONTRAST, p);
-
-        p = new RenderToCanvasGL(gl);
-        p.useBasicBuffers(defaultBuffer);
-        programs.set(BasicPrograms.TO_CANVAS, p);
+        this.init();
     }
 
     render(programsToUse: BasicPrograms[], texture: TextureInfoGL): TextureInfoGL {
@@ -81,7 +66,7 @@ export class BasicRendererGL {
         let gl = this.gl;
         gl.bindTexture(gl.TEXTURE_2D, textureBuffer.textureGL);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        let p: BasicProgramGL<any> = this.programs.get(BasicPrograms.TO_CANVAS) as BasicProgramGL<any>;
+        let p = this.programs.get(BasicPrograms.TO_CANVAS) as RenderToCanvasGL;
         p.render();
     }
 
@@ -117,4 +102,24 @@ export class BasicRendererGL {
         program.createBasicBuffers();
     }
 
+
+    private init() {
+        let gl = this.gl;
+        let defaultBuffer = this.defaultBuffer;
+
+        let programs = this.programs;
+        let p: BasicProgramGL<any>;
+
+        p = new BrightnessGL(gl);
+        p.useBasicBuffers(defaultBuffer);
+        programs.set(BasicPrograms.BRIGHTNESS, p);
+
+        p = new ContrastGL(gl);
+        p.useBasicBuffers(defaultBuffer);
+        programs.set(BasicPrograms.CONTRAST, p);
+
+        p = new RenderToCanvasGL(gl);
+        p.useBasicBuffers(defaultBuffer);
+        programs.set(BasicPrograms.TO_CANVAS, p);
+    }
 }

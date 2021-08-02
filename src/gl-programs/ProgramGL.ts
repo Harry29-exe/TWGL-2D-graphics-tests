@@ -1,6 +1,10 @@
 import {BufferInfo, drawBufferInfo, ProgramInfo} from "twgl.js";
 
-export const basicVertexShaderSrc = `#version 300 es
+export const glsl = (x: any) => {
+    return x[0];
+};
+
+export const basicVertexShaderSrc = glsl`#version 300 es
 precision mediump float;
 
 in vec2 vertPos;
@@ -12,6 +16,8 @@ void main() {
     fragUV = texCoords;
     gl_Position = vec4(vertPos, 0.0, 1.0);
 }`;
+
+
 
 export abstract class ProgramGL<ATTRIBS> {
     protected gl: WebGL2RenderingContext;
@@ -42,6 +48,7 @@ export abstract class ProgramGL<ATTRIBS> {
             throw new Error("Program buffers ");
         }
 
+        this.gl.useProgram(this.programInfo.program);
         drawBufferInfo(this.gl, this.bufferInfo);
     }
 
