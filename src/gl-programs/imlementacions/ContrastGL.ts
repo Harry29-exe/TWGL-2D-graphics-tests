@@ -1,4 +1,4 @@
-import {basicVertexShaderSrc, ProgramGL} from "../ProgramGL";
+import {basicVertexShaderSrc, glsl, ProgramGL} from "../ProgramGL";
 import {
     BufferInfo,
     createBufferInfoFromArrays,
@@ -9,7 +9,7 @@ import {
 import {indexes, uv, vertices} from "../default-buffers/Scenne2D";
 import {BasicProgramGL} from "../basic-programs/BasicProgramGL";
 
-const fragmentShaderSrc = `#version 300 es
+const fragmentShaderSrc = glsl`#version 300 es
 precision mediump float;
 
 in vec2 fragUV;

@@ -16,6 +16,8 @@ void main() {
     outColor = vec4(color.x + brightness, color.y + brightness, color.z + brightness, color.w);
 }`;
 
+
+
 export class BrightnessArgs {
     public brightnessDiff: number;
 

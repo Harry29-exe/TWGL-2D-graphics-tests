@@ -3,13 +3,15 @@ import {BasicProgramGL} from "../gl-programs/basic-programs/BasicProgramGL";
 import {ContrastArgsGL, ContrastGL} from "../gl-programs/imlementacions/ContrastGL";
 import {BufferInfo, createBufferInfoFromArrays, createFramebufferInfo, createProgramInfo, createTexture} from "twgl.js";
 import {indexes, uv, vertices} from "../gl-programs/default-buffers/Scenne2D";
-import {BrightnessGL} from "../gl-programs/imlementacions/BrightnessGL";
+import {BrightnessArgs, BrightnessGL} from "../gl-programs/imlementacions/BrightnessGL";
 import {TextureInfoGL} from "../gl-programs/TextureInfoGL";
 import {RenderToCanvasGL} from "../gl-programs/imlementacions/RerenderToCanvasGL";
+import { Matrix3x3AttribsGL, Matrix3x3GL } from "../gl-programs/imlementacions/Matrix3x3GL";
 
 export enum BasicPrograms {
     CONTRAST,
     BRIGHTNESS,
+    KERNEL,
     TO_CANVAS
 }
 
@@ -78,7 +80,12 @@ export class BasicRendererGL {
 
     setBrightnessAttribs(brightness: number) {
         let p = this.programs.get(BasicPrograms.BRIGHTNESS) as BasicProgramGL<any>;
-        p.setAttributes(brightness);
+        p.setAttributes(new BrightnessArgs(brightness));
+    }
+
+    setKernelAttribs(kernel: Matrix3x3AttribsGL) {
+        let p = this.programs.get(BasicPrograms.KERNEL) as BasicProgramGL<any>;
+        p.setAttributes(kernel);
     }
 
     private bindFrameBuffersAndTextures(
@@ -97,11 +104,6 @@ export class BasicRendererGL {
         return 0;
     }
 
-    private setUpContrastProgram(): void {
-        let program = new ContrastGL(this.gl);
-        program.createBasicBuffers();
-    }
-
 
     private init() {
         let gl = this.gl;
@@ -117,6 +119,10 @@ export class BasicRendererGL {
         p = new ContrastGL(gl);
         p.useBasicBuffers(defaultBuffer);
         programs.set(BasicPrograms.CONTRAST, p);
+
+        p = new Matrix3x3GL(gl);
+        p.useBasicBuffers(defaultBuffer);
+        programs.set(BasicPrograms.KERNEL, p);
 
         p = new RenderToCanvasGL(gl);
         p.useBasicBuffers(defaultBuffer);

@@ -18,8 +18,8 @@ export function init() {
 
     setTimeout(() => {
         console.log('rendering');
-        renderer.setContrastsAttribs(40);
-        let out = renderer.render([BasicPrograms.CONTRAST], new TextureInfoGL(tex0, width, height));
+        renderer.setKernelAttribs
+        let out = renderer.render([BasicPrograms.KERNEL], new TextureInfoGL(tex0, width, height));
         renderer.drawResultToCanvas(out);
 
     }, 2000);
