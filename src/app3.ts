@@ -1,5 +1,5 @@
 import {createTexture} from "twgl.js";
-import {BasicPrograms, BasicRendererGL} from "./renderers/BasicRendererGL";
+import {SinglePixelPrograms, SinglePixelFiltersRendererGL} from "./renderers/single-pixel-renderer/SinglePixelFiltersRendererGL";
 import {TextureInfoGL} from "./gl-programs/TextureInfoGL";
 
 export function init() {
@@ -14,15 +14,16 @@ export function init() {
     }
 
     let tex0 = createTexture(gl, {target: gl.TEXTURE_2D, src: 'tex1.jpg'});
-    let renderer = new BasicRendererGL(gl);
+    let renderer = new SinglePixelFiltersRendererGL(gl);
 
     setTimeout(() => {
         console.log('rendering');
-        renderer.setKernelAttribs
-        let out = renderer.render([BasicPrograms.KERNEL], new TextureInfoGL(tex0, width, height));
+        renderer.setColorAttribs(0.2);
+        let out = renderer.render([SinglePixelPrograms.COLOR_TEMPERATURE], new TextureInfoGL(tex0, width, height));
         renderer.drawResultToCanvas(out);
 
     }, 2000);
 
+    
 
 }

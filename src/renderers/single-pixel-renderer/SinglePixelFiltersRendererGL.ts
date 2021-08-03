@@ -1,22 +1,24 @@
-import {WebGLRenderer} from "./WebGLRenderer";
-import {BasicProgramGL} from "../gl-programs/basic-programs/BasicProgramGL";
-import {ContrastArgsGL, ContrastGL} from "../gl-programs/imlementacions/ContrastGL";
+import {WebGLRenderer} from "../WebGLRenderer";
+import {BasicProgramGL} from "../../gl-programs/BasicProgramGL";
 import {BufferInfo, createBufferInfoFromArrays, createFramebufferInfo, createProgramInfo, createTexture} from "twgl.js";
-import {indexes, uv, vertices} from "../gl-programs/default-buffers/Scenne2D";
-import {BrightnessArgs, BrightnessGL} from "../gl-programs/imlementacions/BrightnessGL";
-import {TextureInfoGL} from "../gl-programs/TextureInfoGL";
-import {RenderToCanvasGL} from "../gl-programs/imlementacions/RerenderToCanvasGL";
-import { Matrix3x3AttribsGL, Matrix3x3GL } from "../gl-programs/imlementacions/Matrix3x3GL";
+import {indexes, uv, vertices} from "../../gl-programs/Scenne2D";
+import {BrightnessArgs, BrightnessGL} from "./BrightnessGL";
+import {TextureInfoGL} from "../../gl-programs/TextureInfoGL";
+import {RenderToCanvasGL} from "../../gl-programs/RerenderToCanvasGL";
+import { Matrix3x3AttribsGL, Matrix3x3GL } from "../kernel3x3-renderer/Matrix3x3GL";
+import { ColorTempAttribsGL, ColorTempGL } from "./ColorTempGL";
+import { ContrastArgsGL, ContrastGL } from "./ContrastGL";
 
-export enum BasicPrograms {
+export enum SinglePixelPrograms {
     CONTRAST,
     BRIGHTNESS,
     KERNEL,
+    COLOR_TEMPERATURE,
     TO_CANVAS
 }
 
-export class BasicRendererGL {
-    private programs: Map<BasicPrograms, BasicProgramGL<any>> = new Map<BasicPrograms, BasicProgramGL<any>>();
+export class SinglePixelFiltersRendererGL {
+    private programs: Map<SinglePixelPrograms, BasicProgramGL<any>> = new Map<SinglePixelPrograms, BasicProgramGL<any>>();
     private gl: WebGL2RenderingContext;
     private defaultBuffer: BufferInfo;
 
@@ -32,16 +34,16 @@ export class BasicRendererGL {
         this.init();
     }
 
-    render(programsToUse: BasicPrograms[], texture: TextureInfoGL): TextureInfoGL {
-        let gl = this.gl;
+    render(programsToUse: SinglePixelPrograms[], texture: TextureInfoGL): TextureInfoGL {
+        const gl = this.gl;
 
-        let tex1 = createTexture(gl, {src: null, width: texture.width, height: texture.height});
-        let tex2 = texture.textureGL;
+        const tex1 = createTexture(gl, {src: null, width: texture.width, height: texture.height});
+        const tex2 = texture.textureGL;
         gl.bindTexture(gl.TEXTURE_2D, tex2);
-        let fb2 = gl.createFramebuffer();
+        const fb2 = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb2);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex2, 0);
-        let fb1 = gl.createFramebuffer();
+        const fb1 = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb1);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex1, 0);
 
@@ -65,27 +67,35 @@ export class BasicRendererGL {
     }
 
     drawResultToCanvas(textureBuffer: TextureInfoGL): void {
-        let gl = this.gl;
+        const gl = this.gl;
         gl.bindTexture(gl.TEXTURE_2D, textureBuffer.textureGL);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        let p = this.programs.get(BasicPrograms.TO_CANVAS) as RenderToCanvasGL;
+        const p = this.programs.get(SinglePixelPrograms.TO_CANVAS) as RenderToCanvasGL;
         p.render();
     }
 
 
     setContrastsAttribs(contrast: number) {
-        let p = this.programs.get(BasicPrograms.CONTRAST) as BasicProgramGL<any>;
+        const p = this.programs.get(SinglePixelPrograms.CONTRAST) as BasicProgramGL<any>;
         p.setAttributes(new ContrastArgsGL(contrast));
     }
 
     setBrightnessAttribs(brightness: number) {
-        let p = this.programs.get(BasicPrograms.BRIGHTNESS) as BasicProgramGL<any>;
+        const p = this.programs.get(SinglePixelPrograms.BRIGHTNESS) as BasicProgramGL<any>;
         p.setAttributes(new BrightnessArgs(brightness));
     }
 
     setKernelAttribs(kernel: Matrix3x3AttribsGL) {
-        let p = this.programs.get(BasicPrograms.KERNEL) as BasicProgramGL<any>;
+        const p = this.programs.get(SinglePixelPrograms.KERNEL) as BasicProgramGL<any>;
         p.setAttributes(kernel);
+    }
+
+    setColorAttribs(colorDiff: number) {
+        if(colorDiff > 1 || colorDiff < -1) {
+            console.warn('Color tempreature difference should be beteewn -1 and 1');
+        };
+        const p = this.programs.get(SinglePixelPrograms.COLOR_TEMPERATURE) as ColorTempGL;
+        p.setAttributes(new ColorTempAttribsGL(colorDiff));
     }
 
     private bindFrameBuffersAndTextures(
@@ -106,26 +116,30 @@ export class BasicRendererGL {
 
 
     private init() {
-        let gl = this.gl;
-        let defaultBuffer = this.defaultBuffer;
+        const gl = this.gl;
+        const defaultBuffer = this.defaultBuffer;
 
-        let programs = this.programs;
+        const programs = this.programs;
         let p: BasicProgramGL<any>;
 
         p = new BrightnessGL(gl);
         p.useBasicBuffers(defaultBuffer);
-        programs.set(BasicPrograms.BRIGHTNESS, p);
+        programs.set(SinglePixelPrograms.BRIGHTNESS, p);
 
         p = new ContrastGL(gl);
         p.useBasicBuffers(defaultBuffer);
-        programs.set(BasicPrograms.CONTRAST, p);
+        programs.set(SinglePixelPrograms.CONTRAST, p);
+
+        p = new ColorTempGL(gl);
+        p.useBasicBuffers(defaultBuffer);
+        programs.set(SinglePixelPrograms.COLOR_TEMPERATURE, p);
 
         p = new Matrix3x3GL(gl);
         p.useBasicBuffers(defaultBuffer);
-        programs.set(BasicPrograms.KERNEL, p);
+        programs.set(SinglePixelPrograms.KERNEL, p);
 
         p = new RenderToCanvasGL(gl);
         p.useBasicBuffers(defaultBuffer);
-        programs.set(BasicPrograms.TO_CANVAS, p);
+        programs.set(SinglePixelPrograms.TO_CANVAS, p);
     }
 }

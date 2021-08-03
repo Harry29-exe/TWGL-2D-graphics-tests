@@ -1,4 +1,4 @@
-import {BasicProgramGL} from "../basic-programs/BasicProgramGL";
+import {BasicProgramGL} from "./BasicProgramGL";
 
 const fragmentShaderSrc = `#version 300 es
 precision mediump float;

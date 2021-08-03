@@ -1,6 +1,6 @@
-import {basicVertexShaderSrc, ProgramGL} from "../ProgramGL";
+import {basicVertexShaderSrc, ProgramGL} from "./ProgramGL";
 import {BufferInfo, createBufferInfoFromArrays, createProgramInfo, setBuffersAndAttributes} from "twgl.js";
-import {indexes, uv, vertices} from "../default-buffers/Scenne2D";
+import {indexes, uv, vertices} from "./Scenne2D";
 
 export abstract class BasicProgramGL<ATTRIB> extends ProgramGL<ATTRIB> {
     protected fragmentShaderSrc: string;

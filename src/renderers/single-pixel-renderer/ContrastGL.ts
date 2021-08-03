@@ -1,4 +1,3 @@
-import {basicVertexShaderSrc, glsl, ProgramGL} from "../ProgramGL";
 import {
     BufferInfo,
     createBufferInfoFromArrays,
@@ -6,8 +5,9 @@ import {
     drawBufferInfo,
     setBuffersAndAttributes, setUniforms
 } from "twgl.js";
-import {indexes, uv, vertices} from "../default-buffers/Scenne2D";
-import {BasicProgramGL} from "../basic-programs/BasicProgramGL";
+import { BasicProgramGL } from "../../gl-programs/BasicProgramGL";
+import { basicVertexShaderSrc, glsl } from "../../gl-programs/ProgramGL";
+
 
 const fragmentShaderSrc = glsl`#version 300 es
 precision mediump float;

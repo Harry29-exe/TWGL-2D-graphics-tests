@@ -1,6 +1,6 @@
 import { createAttribsFromArrays, setUniforms, setUniformsAndBindTextures } from "twgl.js";
-import {BasicProgramGL} from "../basic-programs/BasicProgramGL";
-import { glsl } from "../ProgramGL";
+import {BasicProgramGL} from "../../gl-programs/BasicProgramGL";
+import { glsl } from "../../gl-programs/ProgramGL";
 
 
 const fragmentShaderSrc = glsl`#version 300 es
@@ -26,6 +26,15 @@ void main() {
 
 export class Matrix3x3AttribsGL {
     kernel: [number, number, number, number, number, number, number, number, number] | ArrayBuffer;
+    textureWidth: number;
+    textureHeight: number;
+
+    constructor(kernel: [number, number, number, number, number, number, number, number, number] | ArrayBuffer,
+                textureWidth: number, textureHeight: number) {
+        this.kernel = kernel;
+        this.textureWidth = textureWidth;
+        this.textureHeight = textureHeight;
+    }
 }
 
 export class Matrix3x3GL extends BasicProgramGL<Matrix3x3AttribsGL> {

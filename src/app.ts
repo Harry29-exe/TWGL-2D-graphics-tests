@@ -2,8 +2,8 @@ import {
     createFramebufferInfo,
     createTexture,
 } from "twgl.js";
-import {BrightnessGL} from "./gl-programs/imlementacions/BrightnessGL";
-import {ContrastGL} from "./gl-programs/imlementacions/ContrastGL";
+import {BrightnessGL} from "./renderers/single-pixel-renderer/BrightnessGL";
+import { ContrastGL } from "./renderers/single-pixel-renderer/ContrastGL";
 
 
 export async function init() {

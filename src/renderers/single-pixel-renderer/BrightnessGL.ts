@@ -1,6 +1,6 @@
-import {BasicProgramGL} from "../basic-programs/BasicProgramGL";
+import {BasicProgramGL} from "../../gl-programs/BasicProgramGL";
 import {setUniforms} from "twgl.js";
-import { glsl } from "../ProgramGL";
+import { glsl } from "../../gl-programs/ProgramGL";
 
 const fragmentShaderSrc = glsl`#version 300 es
 precision mediump float;
