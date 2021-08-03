@@ -1,6 +1,11 @@
 import { BasicProgramGL } from "../../gl-programs/BasicProgramGL";
 import { Matrix3x3GL } from "./Matrix3x3GL";
 
+export enum KernelProgramGL {
+    IDENTITY,
+    SHARPEN
+}
+
 export class Kernel3x3RendererGL {
     private gl: WebGL2RenderingContext;
     private kernelProgram: BasicProgramGL<any>;
@@ -11,7 +16,8 @@ export class Kernel3x3RendererGL {
         this.kernelProgram.createBasicBuffers();
     }
 
-    public render() {
+    public render(programs: KernelProgramGL[], texture: WebGLTexture) {
+        let gl = this.gl;
         
     }
 }

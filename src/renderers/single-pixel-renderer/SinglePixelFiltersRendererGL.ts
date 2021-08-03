@@ -43,7 +43,8 @@ export class SinglePixelFiltersRendererGL {
         const fb2 = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb2);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex2, 0);
-        const fb1 = gl.createFramebuffer();
+        // const fb1 = gl.createFramebuffer();
+        const fb1 = createFramebufferInfo(gl,)
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb1);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex1, 0);
 

@@ -10,6 +10,8 @@ in vec2 fragUV;
 uniform sampler2D sampler;
 uniform mat3 kernel;
 uniform float divider;
+uniform float width;
+uniform float height;
 
 out vec4 outColor;
 
@@ -17,7 +19,7 @@ void main() {
     vec4 temp;
     for (int i = 0; i < 3; i++) {
         for(int j = 0; j < 3; j++) {
-            temp += texture(sampler, vec2(fragUV.x + (-1.0 + float(i)), fragUV.y + (-1.0 + float(j)))) * kernel[i][j];
+            temp += texture(sampler, vec2(fragUV.x + (-1.0 + float(i) / width ), fragUV.y + (-1.0 + float(j)) / height)) * kernel[i][j];
         }
     }
     outColor = temp / divider;
@@ -26,14 +28,17 @@ void main() {
 
 export class Matrix3x3AttribsGL {
     kernel: [number, number, number, number, number, number, number, number, number] | ArrayBuffer;
-    textureWidth: number;
-    textureHeight: number;
+    divider: number;
+    width: number;
+    height: number;
 
     constructor(kernel: [number, number, number, number, number, number, number, number, number] | ArrayBuffer,
+                divider: number,
                 textureWidth: number, textureHeight: number) {
         this.kernel = kernel;
-        this.textureWidth = textureWidth;
-        this.textureHeight = textureHeight;
+        this.width = textureWidth;
+        this.height = textureHeight;
+        this.divider = divider;
     }
 }
 
