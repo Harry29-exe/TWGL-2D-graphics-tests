@@ -1,23 +1,55 @@
-export abstract class AbstractRendererGL {
-    private gl: WebGL2RenderingContext;
+import { createFramebufferInfo, createTexture } from "twgl.js";
+import { TextureInfoGL } from "../../gl-programs/TextureInfoGL";
 
-    private frameBuffers(inputTexture: Webgl): [WebGLFramebuffer, WebGLFramebuffer, WebGLTexture] {
+export abstract class AbstractRendererGL {
+    protected gl: WebGL2RenderingContext;
+    protected tex1: WebGLTexture;
+    protected tex2: WebGLTexture;
+    protected fb1: WebGLTexture;
+    protected fb2: WebGLTexture;
+    protected lastFrameBuffer: number = 0;
+
+    constructor(gl: WebGL2RenderingContext) {
+        this.gl = gl;
+    }
+
+    protected bindFrameBuffersAndTextures() {
+
+        if(this.lastFrameBuffer === 0) {
+            this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex2);
+            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fb1);
+            this.lastFrameBuffer = 1;
+            return;
+        }
+
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex1);
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fb2);
+        this.lastFrameBuffer = 0;
+    }
+
+    protected initFrameBuffers(inputTexture: TextureInfoGL): void {
         const gl = this.gl;
 
-        const tex1 = createTexture(gl, {src: null, width: texture.width, height: texture.height});
-        const tex2 = texture.textureGL;
-        gl.bindTexture(gl.TEXTURE_2D, tex2);
-        const fb2 = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb2);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex2, 0);
+        this.tex1 = createTexture(gl, {src: null, width: inputTexture.width, height: inputTexture.height});
+        this.tex2 = inputTexture.textureGL;
+        gl.bindTexture(gl.TEXTURE_2D, this.tex2);
+        this.fb2 = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb2);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.tex2, 0);
         // const fb1 = gl.createFramebuffer();
-        const fb1 = createFramebufferInfo(gl,)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb1);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex1, 0);
+        this.fb1 = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb1);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.tex1, 0);
 
+        this.lastFrameBuffer = 0;
+    }
 
+    protected cleanAndReturnTexture(): WebGLTexture {
+        let gl = this.gl;
+        gl.deleteTexture(this.lastFrameBuffer === 0? this.tex1: this.tex2);
+        gl.deleteFramebuffer(this.fb1);
+        gl.deleteFramebuffer(this.fb2);
 
-
-        return [];
+        return this.lastFrameBuffer === 0? this.tex2: this.tex1;
     }
 }

@@ -8,6 +8,7 @@ import {RenderToCanvasGL} from "../../gl-programs/RerenderToCanvasGL";
 import { Matrix3x3AttribsGL, Matrix3x3GL } from "../kernel3x3-renderer/Matrix3x3GL";
 import { ColorTempAttribsGL, ColorTempGL } from "./ColorTempGL";
 import { ContrastArgsGL, ContrastGL } from "./ContrastGL";
+import { AbstractRendererGL } from "../utils/AbstractRendererGL";
 
 export enum SinglePixelPrograms {
     CONTRAST,
@@ -17,13 +18,12 @@ export enum SinglePixelPrograms {
     TO_CANVAS
 }
 
-export class SinglePixelFiltersRendererGL {
+export class SinglePixelFiltersRendererGL extends AbstractRendererGL {
     private programs: Map<SinglePixelPrograms, BasicProgramGL<any>> = new Map<SinglePixelPrograms, BasicProgramGL<any>>();
-    private gl: WebGL2RenderingContext;
     private defaultBuffer: BufferInfo;
 
     constructor(gl: WebGL2RenderingContext) {
-        this.gl = gl;
+        super(gl);
 
         this.defaultBuffer = createBufferInfoFromArrays(gl,
             {
@@ -36,35 +36,18 @@ export class SinglePixelFiltersRendererGL {
 
     render(programsToUse: SinglePixelPrograms[], texture: TextureInfoGL): TextureInfoGL {
         const gl = this.gl;
-
-        const tex1 = createTexture(gl, {src: null, width: texture.width, height: texture.height});
-        const tex2 = texture.textureGL;
-        gl.bindTexture(gl.TEXTURE_2D, tex2);
-        const fb2 = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb2);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex2, 0);
-        // const fb1 = gl.createFramebuffer();
-        const fb1 = createFramebufferInfo(gl,)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb1);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex1, 0);
+        this.initFrameBuffers(texture);
 
         let lastFrameBuffer = 0;
         let currentProgram: BasicProgramGL<any>;
-        // debugger;
         for(let i = 0; i < programsToUse.length; i++) {
-            lastFrameBuffer = this.bindFrameBuffersAndTextures(fb1, fb2, tex1, tex2, lastFrameBuffer);
+            this.bindFrameBuffersAndTextures();
             currentProgram = this.programs.get(programsToUse[i]);
             currentProgram.render();
         }
 
-        gl.deleteTexture(lastFrameBuffer === 0? tex1: tex2);
-        gl.deleteFramebuffer(fb1);
-        gl.deleteFramebuffer(fb2);
-
-        return lastFrameBuffer === 0?
-            new TextureInfoGL(tex2, texture.width, texture.height)
-            :
-            new TextureInfoGL(tex1, texture.width, texture.height);
+        
+        return new TextureInfoGL(this.cleanAndReturnTexture(), texture.width, texture.height);
     }
 
     drawResultToCanvas(textureBuffer: TextureInfoGL): void {
@@ -97,22 +80,6 @@ export class SinglePixelFiltersRendererGL {
         };
         const p = this.programs.get(SinglePixelPrograms.COLOR_TEMPERATURE) as ColorTempGL;
         p.setAttributes(new ColorTempAttribsGL(colorDiff));
-    }
-
-    private bindFrameBuffersAndTextures(
-        fb1: WebGLFramebuffer, fb2: WebGLFramebuffer,
-        tex1: WebGLTexture, tex2: WebGLTexture,
-        lastFrameBuffer: number): number {
-
-        if(lastFrameBuffer === 0) {
-            this.gl.bindTexture(this.gl.TEXTURE_2D, tex2);
-            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, fb1);
-            return 1;
-        }
-
-        this.gl.bindTexture(this.gl.TEXTURE_2D, tex1);
-        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, fb2);
-        return 0;
     }
 
 

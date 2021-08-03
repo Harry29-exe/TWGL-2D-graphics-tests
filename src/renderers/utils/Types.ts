@@ -1,0 +1,1 @@
+export type mat3 = [number,number,number,number,number,number,number,number,number];

@@ -1,6 +1,7 @@
 import { createAttribsFromArrays, setUniforms, setUniformsAndBindTextures } from "twgl.js";
 import {BasicProgramGL} from "../../gl-programs/BasicProgramGL";
 import { glsl } from "../../gl-programs/ProgramGL";
+import { mat3 } from "../utils/Types";
 
 
 const fragmentShaderSrc = glsl`#version 300 es
@@ -16,6 +17,7 @@ uniform float height;
 out vec4 outColor;
 
 void main() {
+    float alfa = texture(sampler, fragUV).w;
     vec4 temp;
     for (int i = 0; i < 3; i++) {
         for(int j = 0; j < 3; j++) {
@@ -23,16 +25,17 @@ void main() {
         }
     }
     outColor = temp / divider;
+    outColor.w = alfa;
 }
 `
 
 export class Matrix3x3AttribsGL {
-    kernel: [number, number, number, number, number, number, number, number, number] | ArrayBuffer;
+    kernel: mat3 | ArrayBuffer;
     divider: number;
     width: number;
     height: number;
 
-    constructor(kernel: [number, number, number, number, number, number, number, number, number] | ArrayBuffer,
+    constructor(kernel: mat3 | ArrayBuffer,
                 divider: number,
                 textureWidth: number, textureHeight: number) {
         this.kernel = kernel;
