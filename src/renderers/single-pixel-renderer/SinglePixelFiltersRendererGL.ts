@@ -44,6 +44,7 @@ export class SinglePixelFiltersRendererGL extends AbstractRendererGL {
             this.bindFrameBuffersAndTextures();
             currentProgram = this.programs.get(programsToUse[i]);
             currentProgram.render();
+            
         }
 
         

@@ -18,9 +18,12 @@ export function init() {
     let renderer = new SinglePixelFiltersRendererGL(gl);
     let kernelRenderer = new Kernel3x3RendererGL(gl);
 
-
+    gl.flush();
     function draw(tex: WebGLTexture) {
         console.log('rendering');
+        gl.clearColor(0,0,0,0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
         let time = performance.now();
         let texWrapper = new TextureInfoGL(tex, width, height);
         
@@ -43,9 +46,5 @@ export function init() {
     setTimeout(() => {
         draw(tex0);
     }, 2000);
-
-    setTimeout(() => {
-        let tex1: WebGLTexture = createTexture(gl, {target: gl.TEXTURE_2D, src: 'tex1.jpg'}, () => draw(tex1));
-    }, 4000);
 
 }

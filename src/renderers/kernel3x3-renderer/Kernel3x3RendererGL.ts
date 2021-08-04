@@ -7,11 +7,16 @@ import { Matrix3x3AttribsGL, Matrix3x3GL } from "./Matrix3x3GL";
 
 export enum KernelProgramGL {
     IDENTITY,
-    SHARPEN
+    EDGE_DETECTION1,
+    EDGE_DETECTION2,
+    EDGE_DETECTION3,
+    SHARPEN,
+    BOX_BLUR
 }
 
 const Kernels = new Map<KernelProgramGL, {matrix: mat3, divider: number}>([
-    [KernelProgramGL.SHARPEN, {matrix: [ 0, 0, 0,   0, 1, 0,   0, 0, 0], divider: 1}],
+    [KernelProgramGL.IDENTITY, {matrix: [ 0, 0, 0,   0, 1, 0,   0, 0, 0], divider: 1}],
+    [KernelProgramGL.EDGE_DETECTION2, {matrix: [ 0, -1, 0,   -1, 4,-1,   0,-1, 0], divider: 1}],
     [KernelProgramGL.SHARPEN, {matrix: [ 0, -1, 0,   -1, 4,-1,   0,-1, 0], divider: 1}],
 
 ])
