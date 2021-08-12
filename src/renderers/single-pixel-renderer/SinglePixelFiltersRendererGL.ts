@@ -13,9 +13,17 @@ import { AbstractRendererGL } from "../utils/AbstractRendererGL";
 export enum SinglePixelPrograms {
     CONTRAST,
     BRIGHTNESS,
-    KERNEL,
     COLOR_TEMPERATURE,
-    TO_CANVAS
+    
+
+    TO_CANVAS,
+
+
+    CONVERT_TO_HSV,
+    SATURATION,
+    VIBRANCE,
+    GAMMA,
+    HISTOGRAM
 }
 
 export class SinglePixelFiltersRendererGL extends AbstractRendererGL {
@@ -70,11 +78,6 @@ export class SinglePixelFiltersRendererGL extends AbstractRendererGL {
         p.setAttributes(new BrightnessArgs(brightness));
     }
 
-    setKernelAttribs(kernel: Matrix3x3AttribsGL) {
-        const p = this.programs.get(SinglePixelPrograms.KERNEL) as BasicProgramGL<any>;
-        p.setAttributes(kernel);
-    }
-
     setColorAttribs(colorDiff: number) {
         if(colorDiff > 1 || colorDiff < -1) {
             console.warn('Color tempreature difference should be beteewn -1 and 1');
@@ -102,10 +105,6 @@ export class SinglePixelFiltersRendererGL extends AbstractRendererGL {
         p = new ColorTempGL(gl);
         p.useBasicBuffers(defaultBuffer);
         programs.set(SinglePixelPrograms.COLOR_TEMPERATURE, p);
-
-        p = new Matrix3x3GL(gl);
-        p.useBasicBuffers(defaultBuffer);
-        programs.set(SinglePixelPrograms.KERNEL, p);
 
         p = new RenderToCanvasGL(gl);
         p.useBasicBuffers(defaultBuffer);
