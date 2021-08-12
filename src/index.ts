@@ -1,3 +1,3 @@
-import {init} from "./app4";
+import {init} from "./app3";
 
 init();

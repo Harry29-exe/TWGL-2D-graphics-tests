@@ -2,10 +2,11 @@ import {createTexture} from "twgl.js";
 import {SinglePixelPrograms, SinglePixelFiltersRendererGL} from "./renderers/single-pixel-renderer/SinglePixelFiltersRendererGL";
 import {TextureInfoGL} from "./gl-programs/TextureInfoGL";
 import { Kernel3x3RendererGL, KernelProgramGL } from "./renderers/kernel3x3-renderer/Kernel3x3RendererGL";
+import { HistogramRendererGL } from "./renderers/histogram-renderer/HistogramRendererGL";
 
 export function init() {
     document.body.innerHTML = `
-        <canvas id="canvas" height="4446px" width="6241px" style="width: 621px; height: 444px"></canvas>`;
+        <canvas id="canvas" height="4446px" width="6241px" style="width: 1241px; height: 888px"></canvas>`;
     let width = 6241;
     let height = 4446;
     let gl = (document.getElementById('canvas') as HTMLCanvasElement).getContext('webgl2');
@@ -15,8 +16,10 @@ export function init() {
     }
 
     let tex0 = createTexture(gl, {target: gl.TEXTURE_2D, src: 'tex1.jpg'});
-    let renderer = new SinglePixelFiltersRendererGL(gl);
+    // let renderer = new SinglePixelFiltersRendererGL(gl);
+    let renderer = new HistogramRendererGL(gl);
     let kernelRenderer = new Kernel3x3RendererGL(gl);
+    let values = [0, 0.5, 1];
 
     gl.flush();
     function draw(tex: WebGLTexture) {
@@ -31,14 +34,15 @@ export function init() {
         // let out = renderer.render([SinglePixelPrograms.COLOR_TEMPERATURE], new TextureInfoGL(tex0, width, height));
         // let out = kernelRenderer.render([KernelProgramGL.SHARPEN], texWrapper);
         
-        renderer.setContrastsAttribs(64);
-        let out = renderer.render([
-            SinglePixelPrograms.CONTRAST
-        ], texWrapper);
+        // renderer.setContrastsAttribs(64);
+        // let out = renderer.render([
+        //     SinglePixelPrograms.CONTRAST
+        // ], texWrapper);
+        renderer.render(values[0], values[1], values[2]);
         
 
-        renderer.drawResultToCanvas(out);
-        gl.deleteTexture(out.textureGL);
+        // renderer.drawResultToCanvas(out);
+        // gl.deleteTexture(out.textureGL);
         console.log(`Time to draw ${performance.now() - time}ms`);
         
     }
@@ -47,4 +51,20 @@ export function init() {
         draw(tex0);
     }, 2000);
 
+    setTimeout(() => {
+        draw(tex0);
+    }, 3000);
+    
+
+    let input = document.createElement('input') as HTMLInputElement;
+    input.type = 'number';
+    input.min = '0';
+    input.max = '1';
+    input.step = '0.05';
+    input.onchange = (event: any) => {
+        let value = Number.parseFloat(event.target.value);
+        values[1] = value;
+        draw(tex0);
+    }
+    document.body.append(input);
 }

@@ -1,0 +1,3 @@
+float red = ((tex.r - minimum) / (midPoint - minimum)) * 0.5;
+float green = ((tex.g - minimum) / (midPoint - minimum)) * 0.5;
+float blue = ((tex.b - minimum) / (midPoint - minimum)) * 0.5;
