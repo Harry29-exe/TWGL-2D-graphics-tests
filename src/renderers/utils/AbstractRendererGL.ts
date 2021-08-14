@@ -46,7 +46,10 @@ export abstract class AbstractRendererGL {
 
     protected cleanAndReturnTexture(): WebGLTexture {
         let gl = this.gl;
-        gl.deleteTexture(this.lastFrameBuffer === 0? this.tex1: this.tex2);
+        // gl.deleteTexture(this.lastFrameBuffer === 0? this.tex1: this.tex2);
+        if(this.lastFrameBuffer === 0) {
+            gl.deleteTexture(this.tex1);
+        }
         gl.deleteFramebuffer(this.fb1);
         gl.deleteFramebuffer(this.fb2);
 

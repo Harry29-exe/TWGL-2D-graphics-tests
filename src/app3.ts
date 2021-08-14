@@ -1,14 +1,14 @@
-import {createTexture} from "twgl.js";
+import {createFramebufferInfo, createTexture, drawBufferInfo} from "twgl.js";
 import {SinglePixelPrograms, SinglePixelFiltersRendererGL} from "./renderers/single-pixel-renderer/SinglePixelFiltersRendererGL";
 import {TextureInfoGL} from "./gl-programs/TextureInfoGL";
 import { Kernel3x3RendererGL, KernelProgramGL } from "./renderers/kernel3x3-renderer/Kernel3x3RendererGL";
-import { HistogramRendererGL } from "./renderers/histogram-renderer/HistogramRendererGL";
 
 export function init() {
-    document.body.innerHTML = `
-        <canvas id="canvas" height="4446px" width="6241px" style="width: 1241px; height: 888px"></canvas>`;
     let width = 6241;
     let height = 4446;
+    document.body.innerHTML = `
+        <canvas id="canvas" height="${height}px" width="${width}px" ></canvas>`;
+    
     let gl = (document.getElementById('canvas') as HTMLCanvasElement).getContext('webgl2');
 
     if(!gl) {
@@ -16,55 +16,46 @@ export function init() {
     }
 
     let tex0 = createTexture(gl, {target: gl.TEXTURE_2D, src: 'tex1.jpg'});
-    // let renderer = new SinglePixelFiltersRendererGL(gl);
-    let renderer = new HistogramRendererGL(gl);
-    let kernelRenderer = new Kernel3x3RendererGL(gl);
-    let values = [0, 0.5, 1];
+    let renderer = new SinglePixelFiltersRendererGL(gl);
 
     gl.flush();
-    function draw(tex: WebGLTexture) {
-        console.log('rendering');
+
+    function draw(tex: WebGLTexture, vibrance: number): void {
+        
+       
         gl.clearColor(0,0,0,0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        let time = performance.now();
-        let texWrapper = new TextureInfoGL(tex, width, height);
-        
-        // renderer.setColorAttribs(0.2);
-        // let out = renderer.render([SinglePixelPrograms.COLOR_TEMPERATURE], new TextureInfoGL(tex0, width, height));
-        // let out = kernelRenderer.render([KernelProgramGL.SHARPEN], texWrapper);
-        
-        // renderer.setContrastsAttribs(64);
-        // let out = renderer.render([
-        //     SinglePixelPrograms.CONTRAST
-        // ], texWrapper);
-        renderer.render(values[0], values[1], values[2]);
-        
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        let t0 = performance.now();
 
-        // renderer.drawResultToCanvas(out);
+        renderer.setVibranceAttribs(vibrance);
+        let out = renderer.render([SinglePixelPrograms.VIBRANCE], new TextureInfoGL(tex, width, height));
         // gl.deleteTexture(out.textureGL);
-        console.log(`Time to draw ${performance.now() - time}ms`);
-        
+        console.log((performance.now() - t0) / 1000);
+
+        renderer.drawResultToCanvas(out);
+    
     }
 
     setTimeout(() => {
-        draw(tex0);
-    }, 2000);
-
-    setTimeout(() => {
-        draw(tex0);
-    }, 3000);
+        console.log('start');
+        draw(tex0, 1);
+    }, 2_000);
     
 
     let input = document.createElement('input') as HTMLInputElement;
-    input.type = 'number';
+    input.type = 'range';
+    input.value = '1.0';
+    input.max = '10';
     input.min = '0';
-    input.max = '1';
-    input.step = '0.05';
+    input.step = '0.2';
+    // input.style.height = '500px';
     input.onchange = (event: any) => {
-        let value = Number.parseFloat(event.target.value);
-        values[1] = value;
-        draw(tex0);
+        let val = Number.parseFloat(event.target.value);
+        console.log(val);
+        
+        draw(tex0, val);
     }
-    document.body.append(input);
+    document.body.appendChild(input);
 }

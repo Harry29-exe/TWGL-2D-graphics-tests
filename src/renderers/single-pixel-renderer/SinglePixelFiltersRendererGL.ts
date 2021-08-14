@@ -9,12 +9,14 @@ import { Matrix3x3AttribsGL, Matrix3x3GL } from "../kernel3x3-renderer/Matrix3x3
 import { ColorTempAttribsGL, ColorTempGL } from "./ColorTempGL";
 import { ContrastArgsGL, ContrastGL } from "./ContrastGL";
 import { AbstractRendererGL } from "../utils/AbstractRendererGL";
+import { GammaAttribsGL, GammaGL } from "./GammaGL";
+import { VibranceAttribsGL, VibranceGL } from "../hsv-rebderer/VibranceGL";
 
 export enum SinglePixelPrograms {
     CONTRAST,
     BRIGHTNESS,
     COLOR_TEMPERATURE,
-    
+    GAMMA,
 
     TO_CANVAS,
 
@@ -22,7 +24,7 @@ export enum SinglePixelPrograms {
     CONVERT_TO_HSV,
     SATURATION,
     VIBRANCE,
-    GAMMA,
+    
     HISTOGRAM
 }
 
@@ -86,6 +88,16 @@ export class SinglePixelFiltersRendererGL extends AbstractRendererGL {
         p.setAttributes(new ColorTempAttribsGL(colorDiff));
     }
 
+    setGammaAttribs(gamma: number) {
+        const p = this.programs.get(SinglePixelPrograms.GAMMA) as GammaGL;
+        p.setAttributes(new GammaAttribsGL(gamma));
+    }
+
+    setVibranceAttribs(vibrance: number) {
+        const p = this.programs.get(SinglePixelPrograms.VIBRANCE) as VibranceGL;
+        p.setAttributes(new VibranceAttribsGL(vibrance));
+    }
+
 
     private init() {
         const gl = this.gl;
@@ -109,5 +121,9 @@ export class SinglePixelFiltersRendererGL extends AbstractRendererGL {
         p = new RenderToCanvasGL(gl);
         p.useBasicBuffers(defaultBuffer);
         programs.set(SinglePixelPrograms.TO_CANVAS, p);
+
+        p = new VibranceGL(gl);
+        p.useBasicBuffers(defaultBuffer);
+        programs.set(SinglePixelPrograms.VIBRANCE, p);
     }
 }
