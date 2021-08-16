@@ -10,9 +10,12 @@ precision mediump float;
 in vec2 fragUV;
 
 
-#define  Pr  .299
-#define  Pg  .587
-#define  Pb  .114
+// #define  Pr  .299
+// #define  Pg  .587
+// #define  Pb  .114
+#define  Pr  .2125
+#define  Pg  .7154
+#define  Pb  .0721
 uniform sampler2D sampler;
 uniform float vibrance;
 
@@ -23,28 +26,17 @@ void main() {
     vec4 tex = texture(sampler, fragUV);
     vec3 color = convertToHSV(vec3(tex.r, tex.g, tex.b));
 
-    // if(color[1] < 0.05) {
-
-    // } else if(vibrance <= 1.0) {
-    //     color[1] = (
-    //         pow(2.711, -0.5 * pow(color[1] * 3.214, 2.0)) * (vibrance) * color[1]
-    //         + color[1]
-    //         ) / 2.0;
-    // } else {
-    //     // normal distribution
-    //     // 0.55 * (0.22 * (2*pi)^(1/2)) * e ^ we
-    //     float weight = pow(2.711, -0.5 * pow(color[1] * 3.214, 2.0));
-
-    //     color[1] *= (1.0 + (vibrance - 1.0) * weight);
-    // }
-    // outColor = vec4(convertToRGB(color), tex.a);
-
     float p = sqrt(
         tex.r*tex.r*Pr + 
         tex.g*tex.g*Pg + 
         tex.b*tex.b*Pb
         );
-    float weightedVibrance = pow(2.711, -0.5 * pow(color[1] * 3.214, 2.0))*(vibrance-1.0) + 1.0;
+    float weightedVibrance = 
+        vibrance > 1.0?
+        pow(2.711, -0.5 * pow(color[1] * 3.214, 2.0))*(vibrance-1.0) + 1.0:
+        vibrance > 0.0? 
+        pow(1.0/vibrance, -0.5 * pow(color[1] * 3.214, 2.0)):
+        0.0;
     
     outColor = vec4(
         p + (tex.r-p)*weightedVibrance,
@@ -71,6 +63,12 @@ export class VibranceGL extends BasicProgramGL<VibranceAttribsGL> {
     }
 
     setAttributes(attributes: VibranceAttribsGL): void {
+        if(attributes.vibrance < 1.0) {
+            attributes.vibrance = 
+                attributes.vibrance > 0.5?
+                Math.sqrt(attributes.vibrance):
+                Math.pow(attributes.vibrance, 1 - attributes.vibrance);
+        }
         this.gl.useProgram(this.programInfo.program);
         setUniforms(this.programInfo, attributes);
     }

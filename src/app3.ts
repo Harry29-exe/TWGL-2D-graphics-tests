@@ -4,8 +4,8 @@ import {TextureInfoGL} from "./gl-programs/TextureInfoGL";
 import { Kernel3x3RendererGL, KernelProgramGL } from "./renderers/kernel3x3-renderer/Kernel3x3RendererGL";
 
 export function init() {
-    let width = 6241;
-    let height = 4446;
+    let width = 6241 * 0.2;
+    let height = 4446 * 0.2;
     document.body.innerHTML = `
         <canvas id="canvas" height="${height}px" width="${width}px" ></canvas>`;
     
@@ -15,7 +15,7 @@ export function init() {
         throw new Error('No webgl2');
     }
 
-    let tex0 = createTexture(gl, {target: gl.TEXTURE_2D, src: 'tex1.jpg'});
+    let tex0 = createTexture(gl, {target: gl.TEXTURE_2D, src: 'tex1.jpg',width: width, height: height});
     let renderer = new SinglePixelFiltersRendererGL(gl);
 
     gl.flush();
@@ -47,11 +47,11 @@ export function init() {
     let input = document.createElement('input') as HTMLInputElement;
     input.type = 'range';
     input.value = '1.0';
-    input.max = '10';
+    input.max = '2';
     input.min = '0';
-    input.step = '0.2';
+    input.step = '0.01';
     // input.style.height = '500px';
-    input.onchange = (event: any) => {
+    input.oninput = (event: any) => {
         let val = Number.parseFloat(event.target.value);
         console.log(val);
         
